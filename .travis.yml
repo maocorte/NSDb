@@ -1,6 +1,10 @@
 language: scala
 scala:
+  - 2.11.11
   - 2.12.4
+os:
+  - linux
+  - osx
 jdk:
   - oraclejdk8
 env:

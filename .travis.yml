@@ -1,10 +1,12 @@
 language: scala
 scala:
-- 2.11.11
-- 2.12.4
+  - 2.11.11
+  - 2.12.4
 jdk:
-- oraclejdk8
+  - oraclejdk8
+env:
+  - SBT_OPTS="-Xmx3G -XX:+UseConcMarkSweepGC -XX:+CMSClassUnloadingEnabled -Xss2M"
 script:
-- sbt -mem 2048 clean coverage test coverageReport coverageAggregate
+  - sbt clean coverage test coverageReport coverageAggregate
 after_success:
-- bash <(curl -s https://codecov.io/bash)
+  - bash <(curl -s https://codecov.io/bash)

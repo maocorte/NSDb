@@ -74,7 +74,7 @@ lazy val `nsdb-web-ui` = project
       IO.copyDirectory(from, to)
 
     },
-    (compile in Compile) <<= (compile in Compile) dependsOn copyTask
+    (compile in Compile) := ((compile in Compile) dependsOn copyTask).value
   )
 
 lazy val `nsdb-common` = project
@@ -118,17 +118,18 @@ lazy val `nsdb-cluster` = project
   .enablePlugins(JavaAppPackaging, DockerPlugin)
   .settings(libraryDependencies ++= Dependencies.Cluster.libraries)
   .settings(
-    compile in MultiJvm <<= (compile in MultiJvm) triggeredBy (compile in Test),
-    executeTests in Test <<= (executeTests in Test, executeTests in MultiJvm) map {
-      case (testResults, multiNodeResults) =>
-        val overall =
-          if (testResults.overall.id < multiNodeResults.overall.id)
-            multiNodeResults.overall
-          else
-            testResults.overall
-        Tests.Output(overall,
-                     testResults.events ++ multiNodeResults.events,
-                     testResults.summaries ++ multiNodeResults.summaries)
+    compile in MultiJvm := ((compile in MultiJvm) triggeredBy (compile in Test)).value,
+    executeTests in Test := {
+      val testResults      = (executeTests in Test).value
+      val multiNodeResults = (executeTests in MultiJvm).value
+      val overall =
+        if (testResults.overall.id < multiNodeResults.overall.id)
+          multiNodeResults.overall
+        else
+          testResults.overall
+      Tests.Output(overall,
+                   testResults.events ++ multiNodeResults.events,
+                   testResults.summaries ++ multiNodeResults.summaries)
     }
   )
   .enablePlugins(AutomateHeaderPlugin)
@@ -142,7 +143,7 @@ lazy val `nsdb-cluster` = project
       val confDir = baseDirectory.value / "src/main/resources"
 
       for {
-        (file, relativePath) <- (confDir.*** --- confDir) x relativeTo(confDir)
+        (file, relativePath) <- (confDir.*** --- confDir) pair (relativeTo(confDir), false)
       } yield file -> s"/opt/${name.value}/conf/$relativePath"
     },
     packageName in Docker := name.value,
@@ -166,7 +167,7 @@ lazy val `nsdb-cluster` = project
       val confDir = baseDirectory.value / "src/main/resources"
 
       for {
-        (file, relativePath) <- (confDir.*** --- confDir) x relativeTo(confDir)
+        (file, relativePath) <- (confDir.*** --- confDir) pair (relativeTo(confDir), false)
       } yield file -> s"conf/$relativePath"
     },
     discoveredMainClasses in Compile ++= (discoveredMainClasses in (`nsdb-cli`, Compile)).value,

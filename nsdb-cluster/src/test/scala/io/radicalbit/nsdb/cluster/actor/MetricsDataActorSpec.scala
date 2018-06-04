@@ -134,9 +134,7 @@ class MetricsDataActorSpec()
     expectedCount2.count shouldBe 1
 
     probe.send(metricsDataActor, DeleteNamespace(db, namespace1))
-    awaitAssert {
-      probe.expectMsgType[NamespaceDeleted]
-    }
+    awaitAssert { probe.expectMsgType[NamespaceDeleted] }
 
     expectNoMessage(interval)
 

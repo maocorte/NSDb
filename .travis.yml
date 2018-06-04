@@ -6,6 +6,7 @@ jdk:
   - oraclejdk8
 env:
   - SBT_OPTS="-Xmx3G -XX:+UseConcMarkSweepGC -XX:+CMSClassUnloadingEnabled -Xss2M"
+  - _JAVA_OPTIONS="-Xmx3G -Xms3G"
 script:
   - sbt clean coverage test coverageReport coverageAggregate
 after_success:

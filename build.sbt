@@ -213,10 +213,7 @@ lazy val `nsdb-scala-api` = project
 lazy val `nsdb-cli` = project
   .settings(Commons.settings: _*)
   .settings(PublishSettings.dontPublish: _*)
-  .settings(
-    libraryDependencies ++= Dependencies.CLI.libraries,
-    dependencyOverrides += "org.scala-lang" % "scala-compiler" % scalaVersion.value
-  )
+  .settings(libraryDependencies ++= Dependencies.CLI.libraries)
   .settings(coverageExcludedPackages := "io\\.radicalbit\\.nsdb.*")
   .settings(assemblyJarName in assembly := "nsdb-cli.jar")
   .enablePlugins(AutomateHeaderPlugin)

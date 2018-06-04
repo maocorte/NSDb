@@ -53,7 +53,7 @@ object MessageProtocol {
     case class GetCount(db: String, namespace: String, metric: String)
     case class AddRecordToShard(db: String, namespace: String, shardKey: ShardKey, bit: Bit)
     case class DeleteRecordFromShard(db: String, namespace: String, shardKey: ShardKey, bit: Bit)
-    case class DeleteAllMetrics(db: String, namespace: String)
+    case class DeleteAllMetrics(db: String, namespace: String, replyTo: ActorRef)
 
     case object GetReadCoordinator
     case object GetWriteCoordinator
@@ -94,7 +94,7 @@ object MessageProtocol {
     case class RecordAdded(db: String, namespace: String, metric: String, record: Bit)
     case class RecordRejected(db: String, namespace: String, metric: String, record: Bit, reasons: List[String])
     case class RecordDeleted(db: String, namespace: String, metric: String, record: Bit)
-    case class AllMetricsDeleted(db: String, namespace: String)
+    case class AllMetricsDeleted(db: String, namespace: String, replyTo: ActorRef)
 
     case class CommitLogActorSubscribed(actor: ActorRef, host: Option[String] = None)
     case class CommitLogActorSubscriptionFailed(actor: ActorRef, host: Option[String] = None, reason: String)

@@ -180,7 +180,7 @@ class ShardAccumulatorActor(val basePath: String, val db: String, val namespace:
     *
     */
   def ddlOps: Receive = {
-    case DeleteAllMetrics(_, ns) =>
+    case DeleteAllMetrics(_, ns, replyTo) =>
       shards.foreach {
         case (_, index) =>
           implicit val writer: IndexWriter = index.getWriter
@@ -198,7 +198,7 @@ class ShardAccumulatorActor(val basePath: String, val db: String, val namespace:
 
       FileUtils.deleteDirectory(Paths.get(basePath, db, namespace).toFile)
 
-      sender ! AllMetricsDeleted(db, ns)
+      sender ! AllMetricsDeleted(db, ns, replyTo)
     case DropMetric(_, _, metric) =>
       shardsForMetric(metric).foreach {
         case (key, index) =>

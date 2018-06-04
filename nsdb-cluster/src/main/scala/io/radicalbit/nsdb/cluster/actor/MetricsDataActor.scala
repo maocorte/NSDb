@@ -19,8 +19,7 @@ package io.radicalbit.nsdb.cluster.actor
 import java.nio.file.Paths
 import java.util.concurrent.TimeUnit
 
-import akka.actor.{Actor, ActorLogging, ActorRef, PoisonPill, Props}
-import akka.pattern.{ask, pipe}
+import akka.actor.{Actor, ActorLogging, ActorRef, Props}
 import akka.util.Timeout
 import io.radicalbit.nsdb.actors.{ShardAccumulatorActor, ShardKey}
 import io.radicalbit.nsdb.cluster.actor.MetricsDataActor._
@@ -31,8 +30,6 @@ import io.radicalbit.nsdb.model.Schema
 import io.radicalbit.nsdb.protocol.MessageProtocol.Commands._
 import io.radicalbit.nsdb.protocol.MessageProtocol.Events._
 
-import scala.collection.mutable
-
 /**
   * Actor responsible for dispatching read or write commands to the proper actor and index.
   * @param basePath indexes' root path.
@@ -40,8 +37,6 @@ import scala.collection.mutable
 class MetricsDataActor(val basePath: String) extends Actor with ActorLogging {
 
   lazy val sharding: Boolean = context.system.settings.config.getBoolean("nsdb.sharding.enabled")
-
-  val childActors: mutable.Map[NamespaceKey, ActorRef] = mutable.Map.empty
 
   /**
     * Gets or creates child actor of class [[ShardAccumulatorActor]] to handle write requests
@@ -51,14 +46,10 @@ class MetricsDataActor(val basePath: String) extends Actor with ActorLogging {
     * @return [[ShardAccumulatorActor]] for selected database and namespace
     */
   private def getOrCreateChild(db: String, namespace: String): ActorRef =
-    childActors.getOrElse(
-      NamespaceKey(db, namespace), {
-        val child = context.actorOf(ShardAccumulatorActor.props(basePath, db, namespace),
-                                    s"shard-accumulator-service-$db-$namespace")
-        childActors += (NamespaceKey(db, namespace) -> child)
-        child
-      }
-    )
+    context
+      .child(s"shard_accumulator_${db}_$namespace")
+      .getOrElse(
+        context.actorOf(ShardAccumulatorActor.props(basePath, db, namespace), s"shard_accumulator_${db}_$namespace"))
 
   /**
     * If exists, gets child for selected namespace and database.
@@ -69,13 +60,11 @@ class MetricsDataActor(val basePath: String) extends Actor with ActorLogging {
     * @return Option containing child actor of class [[ShardAccumulatorActor]]
     */
   private def getChild(db: String, namespace: String): Option[ActorRef] =
-    childActors.get(NamespaceKey(db, namespace))
+    context.child(s"shard_accumulator_${db}_$namespace")
 
   implicit val timeout: Timeout = Timeout(
     context.system.settings.config.getDuration("nsdb.namespace-data.timeout", TimeUnit.SECONDS),
     TimeUnit.SECONDS)
-
-  import context.dispatcher
 
   override def preStart(): Unit = {
     Option(Paths.get(basePath).toFile.list())
@@ -87,9 +76,7 @@ class MetricsDataActor(val basePath: String) extends Actor with ActorLogging {
       })
       .foreach {
         case (db, namespace) =>
-          childActors += (NamespaceKey(db, namespace) -> context.actorOf(
-            ShardAccumulatorActor.props(basePath, db, namespace),
-            s"shard-accumulator-service-$db-$namespace"))
+          context.actorOf(ShardAccumulatorActor.props(basePath, db, namespace), s"shard_accumulator_${db}_$namespace")
       }
   }
 
@@ -97,23 +84,24 @@ class MetricsDataActor(val basePath: String) extends Actor with ActorLogging {
 
   def commons: Receive = {
     case GetDbs =>
-      sender() ! DbsGot(childActors.keys.map(_.db).toSet)
+      val dbs = context.children.map(_.path.name.split("_")(2))
+      sender() ! DbsGot(dbs.toSet)
     case GetNamespaces(db) =>
-      sender() ! NamespacesGot(db, childActors.keys.filter(_.db == db).map(_.namespace).toSet)
+      val namespaces = context.children.collect {
+        case c if c.path.name.split("_")(2) == db => c.path.name.split("_")(3)
+      }
+      sender() ! NamespacesGot(db, namespaces.toSet)
     case msg @ GetMetrics(db, namespace) =>
       getChild(db, namespace) match {
         case Some(child) => child forward msg
         case None        => sender() ! MetricsGot(db, namespace, Set.empty)
       }
     case DeleteNamespace(db, namespace) =>
-      val indexToRemove = getOrCreateChild(db, namespace)
-      (indexToRemove ? DeleteAllMetrics(db, namespace))
-        .map(_ => {
-          indexToRemove ! PoisonPill
-          childActors -= NamespaceKey(db, namespace)
-          NamespaceDeleted(db, namespace)
-        })
-        .pipeTo(sender())
+      getOrCreateChild(db, namespace) ! DeleteAllMetrics(db, namespace, sender)
+    case AllMetricsDeleted(db, namespace, replyTo) =>
+      val childToRemove = getOrCreateChild(db, namespace)
+      context.stop(childToRemove)
+      replyTo ! NamespaceDeleted(db, namespace)
     case msg @ DropMetric(db, namespace, metric) =>
       getChild(db, namespace) match {
         case Some(child) => child forward msg

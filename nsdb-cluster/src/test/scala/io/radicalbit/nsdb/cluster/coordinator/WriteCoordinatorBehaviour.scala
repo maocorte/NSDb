@@ -173,7 +173,7 @@ trait WriteCoordinatorBehaviour { this: TestKit with WordSpecLike with Matchers 
       Thread.sleep(2000)
 
       namespaceSchemaActor.underlyingActor.schemaActors.keys.size shouldBe 0
-      metricsDataActor.underlyingActor.childActors.keys.size shouldBe 0
+      metricsDataActor.underlyingActor.context.children.size shouldBe 0
     }
 
     "delete entries" in within(5.seconds) {

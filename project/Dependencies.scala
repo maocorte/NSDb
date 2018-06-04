@@ -15,11 +15,12 @@
  */
 
 import sbt._
+import sbt.Keys.scalaVersion
 
 object Dependencies {
 
   object scalaLang {
-    lazy val version   = "2.12.4"
+    lazy val version   = scalaVersion.value
     lazy val namespace = "org.scala-lang"
     lazy val compiler  = namespace % "scala-compiler" % version
   }

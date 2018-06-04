@@ -51,10 +51,10 @@ class NamespaceSchemaActorSpec
 
   before {
     implicit val timeout = Timeout(10 seconds)
-    Await.result(namespaceSchemaActor ? DeleteNamespace(db, namespace), 3 seconds)
-    Await.result(namespaceSchemaActor ? DeleteNamespace(db, namespace1), 3 seconds)
-    Await.result(namespaceSchemaActor ? UpdateSchemaFromRecord(db, namespace, "people", nameRecord), 3 seconds)
-    Await.result(namespaceSchemaActor ? UpdateSchemaFromRecord(db, namespace1, "people", surnameRecord), 3 seconds)
+    Await.result(namespaceSchemaActor ? DeleteNamespace(db, namespace), 5 seconds)
+    Await.result(namespaceSchemaActor ? DeleteNamespace(db, namespace1), 5 seconds)
+    Await.result(namespaceSchemaActor ? UpdateSchemaFromRecord(db, namespace, "people", nameRecord), 5 seconds)
+    Await.result(namespaceSchemaActor ? UpdateSchemaFromRecord(db, namespace1, "people", surnameRecord), 5 seconds)
   }
 
   "SchemaActor" should "get schemas from different namespaces" in {

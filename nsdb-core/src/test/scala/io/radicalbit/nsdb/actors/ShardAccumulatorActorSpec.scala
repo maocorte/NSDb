@@ -60,33 +60,33 @@ class ShardAccumulatorActorSpec()
     val key = ShardKey("shardActorMetric", 0, 100)
 
     probe.send(shardActor, AddRecordToShard(db, namespace, key, bit))
-    awaitAssert {
-      val expectedAdd = probe.expectMsgType[RecordAdded]
-      expectedAdd.metric shouldBe metric
-      expectedAdd.record shouldBe bit
-    }
-    expectNoMessage(interval)
+    val expectedAdd = awaitAssert { probe.expectMsgType[RecordAdded] }
+    expectedAdd.metric shouldBe metric
+    expectedAdd.record shouldBe bit
+
+    awaitAssert { expectNoMessage(interval) }
 
     probe.send(shardActor, GetCount(db, namespace, "shardActorMetric"))
-    awaitAssert {
-      val expectedCount = probe.expectMsgType[CountGot]
-      expectedCount.metric shouldBe metric
-      expectedCount.count shouldBe 1
-    }
+
+    val expectedCount = awaitAssert { probe.expectMsgType[CountGot] }
+    expectedCount.metric shouldBe metric
+    expectedCount.count shouldBe 1
+
     probe.send(shardActor, DeleteRecordFromShard(db, namespace, key, bit))
+    
     within(5 seconds) {
       val expectedDelete = probe.expectMsgType[RecordDeleted]
       expectedDelete.metric shouldBe metric
       expectedDelete.record shouldBe bit
     }
-    expectNoMessage(interval)
+
+    awaitAssert { expectNoMessage(interval) }
 
     probe.send(shardActor, GetCount(db, namespace, "shardActorMetric"))
-    awaitAssert {
-      val expectedCountDeleted = probe.expectMsgType[CountGot]
-      expectedCountDeleted.metric shouldBe metric
-      expectedCountDeleted.count shouldBe 0
-    }
+
+    val expectedCountDeleted =  awaitAssert { probe.expectMsgType[CountGot] }
+    expectedCountDeleted.metric shouldBe metric
+    expectedCountDeleted.count shouldBe 0
 
   }
 

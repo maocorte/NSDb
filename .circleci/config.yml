@@ -6,8 +6,8 @@ jobs:
       - image: openjdk:8
     environment:
       - SBT_VERSION: 0.13.16
-      - JVM_OPTS: -Xms3G -Xmx3G -Xss6M -XX:MaxMetaspaceSize=1G -XX:+UseConcMarkSweepGC -XX:+CMSClassUnloadingEnabled
-      - SBT_OPTS: -Xmx3G -XX:+UseConcMarkSweepGC -XX:+CMSClassUnloadingEnabled -Xss2M
+      - JVM_OPTS: -Xms2G -Xmx2G -Xss6M -XX:MaxMetaspaceSize=1G -XX:+UseConcMarkSweepGC -XX:+CMSClassUnloadingEnabled
+      - SBT_OPTS: -Xmx2G -XX:+UseConcMarkSweepGC -XX:+CMSClassUnloadingEnabled -Xss2M
 
     steps:
       - run:

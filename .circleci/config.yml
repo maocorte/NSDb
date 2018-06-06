@@ -25,3 +25,6 @@ jobs:
       - run:
           name: Running tests and generate coverage report
           command: cat /dev/null | sbt clean coverage test coverageReport coverageAggregate
+      - run:
+          name: Publish coverage report
+          command: bash <(curl -s https://codecov.io/bash)

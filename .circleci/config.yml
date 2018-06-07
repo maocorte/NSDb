@@ -1,13 +1,8 @@
 version: 2
 jobs:
   build:
-
     working_directory: ~/repo
-
-    machine:
-      java:
-        version: oraclejdk8
-
+    machine: true
     environment:
       - SBT_VERSION: 0.13.16
       - JVM_OPTS: -Xms4G -Xmx4G -Xss6M -XX:MaxMetaspaceSize=1G -XX:+UseConcMarkSweepGC -XX:+CMSClassUnloadingEnabled

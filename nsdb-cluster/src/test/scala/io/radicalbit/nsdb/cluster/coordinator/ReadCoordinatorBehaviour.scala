@@ -100,7 +100,7 @@ trait ReadCoordinatorBehaviour { this: TestKit with WordSpecLike with Matchers =
         "return it properly" in within(5.seconds) {
           probe.send(readCoordinatorActor, GetDbs)
 
-          val expected = awaitAssert { probe.expectMsgType[DbsGot] }
+          val expected = probe.expectMsgType[DbsGot]
           expected.dbs shouldBe Set(db)
 
         }
@@ -110,7 +110,7 @@ trait ReadCoordinatorBehaviour { this: TestKit with WordSpecLike with Matchers =
         "return it properly" in within(5.seconds) {
           probe.send(readCoordinatorActor, GetNamespaces(db))
 
-          val expected = awaitAssert { probe.expectMsgType[NamespacesGot] }
+          val expected = probe.expectMsgType[NamespacesGot]
           expected.namespaces shouldBe Set(namespace)
 
         }
@@ -120,9 +120,11 @@ trait ReadCoordinatorBehaviour { this: TestKit with WordSpecLike with Matchers =
         "return it properly" in within(5.seconds) {
           probe.send(readCoordinatorActor, GetMetrics(db, namespace))
 
-          val expected = awaitAssert { probe.expectMsgType[MetricsGot] }
+          val expected = probe.expectMsgType[MetricsGot]
+
           expected.namespace shouldBe namespace
           expected.metrics shouldBe Set(LongMetric.name, DoubleMetric.name, AggregationMetric.name)
+
         }
       }
 
@@ -179,8 +181,10 @@ trait ReadCoordinatorBehaviour { this: TestKit with WordSpecLike with Matchers =
               )
             )
           )
-          val expected = awaitAssert { probe.expectMsgType[SelectStatementExecuted] }
-          val names    = expected.values.flatMap(_.dimensions.values.map(_.asInstanceOf[String]))
+          val expected = awaitAssert {
+            probe.expectMsgType[SelectStatementExecuted]
+          }
+          val names = expected.values.flatMap(_.dimensions.values.map(_.asInstanceOf[String]))
           names.contains("Bill") shouldBe true
           names.contains("Frank") shouldBe true
           names.contains("Frankie") shouldBe true
@@ -201,8 +205,10 @@ trait ReadCoordinatorBehaviour { this: TestKit with WordSpecLike with Matchers =
               )
             )
           )
-          val expected = awaitAssert { probe.expectMsgType[SelectStatementExecuted] }
-          val names    = expected.values.flatMap(_.dimensions.values.map(_.asInstanceOf[String]))
+          val expected = awaitAssert {
+            probe.expectMsgType[SelectStatementExecuted]
+          }
+          val names = expected.values.flatMap(_.dimensions.values.map(_.asInstanceOf[String]))
           names.size shouldBe 2
         }
 

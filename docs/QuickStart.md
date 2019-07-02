@@ -5,7 +5,7 @@
 NSDb runs on Linux and Mac OS X. To be able to run NSDb, the only requirements are:
 
 - Java 8.x (or higher) installation.
-- sbt 0.13.x.
+- sbt 1.1.x.
 
 ### Build and Launch
 It is possible to package the project using sbt with command `dist`:
@@ -16,9 +16,9 @@ $ sbt dist
 Once project packaging is completed, unzip archive created in path : `package`.
 ```bash
 $ cd package
-$ unzip nsdb-0.6.0-SNAPSHOT.zip
-$ cd nsdb-0.6.0-SNAPSHOT/bin
-$ ./nsdb-cluster
+$ unzip nsdb-0.8.0-SNAPSHOT.zip
+$ cd nsdb-0.8.0-SNAPSHOT/bin
+$ ./nsdb
 ```
 In order to check if the application is up and running properly user can call health-check API:
 ```bash
@@ -47,7 +47,7 @@ version: '3'
 services:
 
     nsdb:
-      image: tools.radicalbit.io/nsdb:0.6.0-SNAPSHOT
+      image: tools.radicalbit.io/nsdb:0.8.0-SNAPSHOT
       environment:
         AKKA_HOSTNAME: nsdb-node-1
       ports:
@@ -63,11 +63,11 @@ version: '3'
 services:
 
     nsdb:
-      image: tools.radicalbit.io/nsdb:0.6.0-SNAPSHOT
+      image: tools.radicalbit.io/nsdb:0.8.0-SNAPSHOT
       volumes:
-        - .conf:/opt/nsdb-cluster/conf
-        - /host/data/path:/opt/nsdb-cluster/data
-        - /host/ext-lib/path:/opt/nsdb-cluster/ext-lib
+        - .conf:/opt/nsdb/conf
+        - /host/data/path:/opt/nsdb/data
+        - /host/ext-lib/path:/opt/nsdb/ext-lib
         - /host/certs/path:/opt/certs
       ports:
         - 9000:9000
@@ -81,7 +81,7 @@ $ docker-compose up
 ```
 Command Line Interface(CLI) can be launched executing:
 ```bash
-$ docker run --rm -it tools.radicalbit.io/nsdb:0.6.0-SNAPSHOT bin/nsdb-cli --host %HOST_IP% --port 7817 --database database_name
+$ docker run --rm -it tools.radicalbit.io/nsdb:0.8.0-SNAPSHOT bin/nsdb-cli --host %HOST_IP% --port 7817 --database database_name
 ```
 where `%HOST_IP%` is the IP where NSDb is running.
 
@@ -96,7 +96,7 @@ $ sbt deb
 Once project packaging is completed, deb package could be found in path : `package`.
 ```bash
 $ cd package
-$ dpkg --install nsdb_0.6.0-SNAPSHOT_all.deb
+$ dpkg --install nsdb_0.8.0-SNAPSHOT_all.deb
 $ nsdb-cluster
 ```
 Command Line Interface(CLI) can be launched executing in the same path:
@@ -113,7 +113,7 @@ $ sbt rpm
 Once project packaging is completed, rpm package could be found in path : `package`.
 ```bash
 $ cd package
-$ yum install nsdb-0.6.0-1.noarch.rpm
+$ yum install nsdb-0.8.0-SNAPSHOT-1.noarch.rpm
 $ nsdb-cluster
 ```
 Command Line Interface(CLI) can be launched executing in the same path:
